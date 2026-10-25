@@ -45,7 +45,7 @@ mqtt:
 
 - **persist_subscriptions** (*Optional*, boolean): Skip sending the subscriptions again when the device
   reconnects and the broker still has them from the previous session. This saves traffic and time on
-  each connection, which helps battery powered and deep sleep devices. Requires `clean_session: false`.
+  each connection, which helps battery-powered and deep sleep devices. Requires `clean_session: false`.
   Defaults to `false`.
 
   The device keeps one fingerprint of its subscriptions (topics, QoS and the configuration) in memory
@@ -60,7 +60,8 @@ mqtt:
 
   Subscriptions that a lambda adds after the device has connected make the fingerprint differ between
   restarts and reconnects, so everything is subscribed again then. Topics that only an older firmware
-  used stay subscribed on the broker until it drops the session.
+  used stay subscribed on the broker until it drops the session; to drop them sooner, flash the device
+  once with `clean_session: true`.
 
 - **client_id** (*Optional*, string): The client id to use for opening
   connections. See [Defaults](#defaults) for more information.
