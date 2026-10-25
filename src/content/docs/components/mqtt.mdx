@@ -60,8 +60,9 @@ mqtt:
 
   Subscriptions that a lambda adds after the device has connected make the fingerprint differ between
   restarts and reconnects, so everything is subscribed again then. Topics that only an older firmware
-  used stay subscribed on the broker until it drops the session; to drop them sooner, flash the device
-  once with `clean_session: true`.
+  used stay subscribed on the broker until it drops the session. To drop them sooner, flash the device
+  once with `clean_session: true` and without `persist_subscriptions`, let it connect, then flash the usual
+  configuration again.
 
 - **client_id** (*Optional*, string): The client id to use for opening
   connections. See [Defaults](#defaults) for more information.
