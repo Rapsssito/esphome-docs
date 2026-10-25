@@ -48,16 +48,19 @@ mqtt:
   each connection, which helps battery powered and deep sleep devices. Requires `clean_session: false`.
   Defaults to `false`.
 
-  The device stores one fingerprint of its subscriptions (topics, QoS and the configuration) in flash.
-  When the broker reports that the session is still present and the fingerprint matches, no subscriptions
-  are sent; otherwise all of them are sent as usual. The fingerprint is only written once the broker has
-  accepted every subscription and only when the set of subscriptions changed (in practice after a
-  firmware update), so there is no flash write on every reconnect. Unsubscribing from a topic at run time
-  clears the stored fingerprint, so the next connection subscribes to everything again.
+  The device keeps one fingerprint of its subscriptions (topics, QoS and the configuration) in memory
+  that survives deep sleep and restarts but not a power loss: RTC memory on the ESP8266 and on ESP32
+  chips that have it. Nothing is written to flash. When the broker reports that the session is still
+  present and the fingerprint matches the one the broker last accepted in full, no subscriptions are
+  sent; otherwise all of them are sent as usual. While they are being sent the fingerprint is not
+  trusted, so a connection lost part way through cannot be mistaken for a complete session. After a
+  power loss, and after any restart on chips without RTC memory (the ESP32-C2 and ESP32-C61 and the
+  LibreTiny chips), the first connection subscribes to everything once. Unsubscribing from a topic at
+  run time also makes the next connection subscribe to everything again.
 
   Subscriptions that a lambda adds after the device has connected make the fingerprint differ between
-  reboots and reconnects, which costs one flash write each time. Topics that only an older firmware used
-  stay subscribed on the broker until it drops the session.
+  restarts and reconnects, so everything is subscribed again then. Topics that only an older firmware
+  used stay subscribed on the broker until it drops the session.
 
 - **client_id** (*Optional*, string): The client id to use for opening
   connections. See [Defaults](#defaults) for more information.
