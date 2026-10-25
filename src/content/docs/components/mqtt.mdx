@@ -40,15 +40,24 @@ mqtt:
 - **password** (*Optional*, string): The password to use for
   authentication. Empty (the default) means no authentication.
 
-- **clean_session** (*Optional*, boolean, string): Whether the broker will clean
-  the MQTT session after disconnect. Can be one of `true`, `false`, `RTC` or `FLASH`. Defaults to `false`.
-  If `RTC` (ESP32 only, persistent between deep-sleeps) or `FLASH` (persistent even after power off),
-  the device will save the subscriptions to avoid having to resubscribe when reconnecting.
+- **clean_session** (*Optional*, boolean): Whether the broker will clean
+  the MQTT session after disconnect. Defaults to `false`.
 
-- **max_persisted_subscriptions** (*Optional*, int): Number of slots to allocate for storing
-  subscriptions in non-clean sessions. Only used if `clean_session` is `RTC` or `FLASH`.
-  It is recommended **not** to set this variable unless you are performing persistent
-  subscriptions outside of the usual configuration (i.e. in lambdas).
+- **persist_subscriptions** (*Optional*, boolean): Skip sending the subscriptions again when the device
+  reconnects and the broker still has them from the previous session. This saves traffic and time on
+  each connection, which helps battery powered and deep sleep devices. Requires `clean_session: false`.
+  Defaults to `false`.
+
+  The device stores one fingerprint of its subscriptions (topics, QoS and the configuration) in flash.
+  When the broker reports that the session is still present and the fingerprint matches, no subscriptions
+  are sent; otherwise all of them are sent as usual. The fingerprint is only written once the broker has
+  accepted every subscription and only when the set of subscriptions changed (in practice after a
+  firmware update), so there is no flash write on every reconnect. Unsubscribing from a topic at run time
+  clears the stored fingerprint, so the next connection subscribes to everything again.
+
+  Subscriptions that a lambda adds after the device has connected make the fingerprint differ between
+  reboots and reconnects, which costs one flash write each time. Topics that only an older firmware used
+  stay subscribed on the broker until it drops the session.
 
 - **client_id** (*Optional*, string): The client id to use for opening
   connections. See [Defaults](#defaults) for more information.
